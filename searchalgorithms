@@ -1,33 +1,78 @@
-// Merge Sort: by GPA
-// Time: O(n log n)
-// Space: O(n)
+// file to implement sorting algorithms (by GPA only)
 
-void merge(std::vector<Student>& students, int left, int mid, int right) {
-    std::vector<Student> leftArr(students.begin() + left,  students.begin() + mid + 1);
-    std::vector<Student> rightArr(students.begin() + mid + 1, students.begin() + right + 1);
+#include <iostream>
+#include <vector>
+#include <algorithm>
 
-    int i = 0, j = 0, k = left;
+// ─────────────────────────────────────────────
+//  Quick Sort  —  sorted by GPA
+//  Time: O(n log n) average
+// ─────────────────────────────────────────────
+int partitionGPA(std::vector<Student>& students, int low, int high) {
+    float pivot = students[high].gpa;
+    int i = low - 1;
 
-    while (i < (int)leftArr.size() && j < (int)rightArr.size()) {
-        if (leftArr[i].gpa <= rightArr[j].gpa)
-            students[k++] = leftArr[i++];
-        else
-            students[k++] = rightArr[j++];
+    for (int j = low; j < high; ++j) {
+        if (students[j].gpa < pivot) {
+            ++i;
+            std::swap(students[i], students[j]);
+        }
     }
-    while (i < (int)leftArr.size())  students[k++] = leftArr[i++];
-    while (j < (int)rightArr.size()) students[k++] = rightArr[j++];
+
+    std::swap(students[i + 1], students[high]);
+    return i + 1;
 }
 
-void mergeSort(std::vector<Student>& students, int left, int right) {
-    if (left >= right) return;          // base case: single element
+void quickSortByGPA(std::vector<Student>& students, int low, int high) {
+    if (low < high) {
+        int pi = partitionGPA(students, low, high);
 
-    int mid = left + (right - left) / 2;
-    mergeSort(students, left, mid);     // sort left half
-    mergeSort(students, mid + 1, right);// sort right half
-    merge(students, left, mid, right);  // merge the two halves
+        quickSortByGPA(students, low, pi - 1);
+        quickSortByGPA(students, pi + 1, high);
+    }
 }
 
+// ─────────────────────────────────────────────
+//  Heap Sort  —  sorted by GPA
+//  Time: O(n log n)
+// ─────────────────────────────────────────────
+void heapify(std::vector<Student>& students, int n, int i) {
+    int largest = i;
+    int left  = 2 * i + 1;
+    int right = 2 * i + 2;
 
-// Quick Sort: by GPA
-// Time: O()
-// Space: O()
+    if (left < n && students[left].gpa > students[largest].gpa)
+        largest = left;
+
+    if (right < n && students[right].gpa > students[largest].gpa)
+        largest = right;
+
+    if (largest != i) {
+        std::swap(students[i], students[largest]);
+        heapify(students, n, largest);
+    }
+}
+
+void heapSortByGPA(std::vector<Student>& students) {
+    int n = static_cast<int>(students.size());
+
+    // Build max heap
+    for (int i = n / 2 - 1; i >= 0; --i)
+        heapify(students, n, i);
+
+    // Extract elements from heap
+    for (int i = n - 1; i > 0; --i) {
+        std::swap(students[0], students[i]);
+        heapify(students, i, 0);
+    }
+}
+
+// ─────────────────────────────────────────────
+//  Helper Function (for testing)
+// ─────────────────────────────────────────────
+void printByGPA(const std::vector<Student>& students) {
+    std::cout << "\nStudents sorted by GPA:\n";
+    for (const auto& s : students) {
+        std::cout << "  " << s.name << " | GPA: " << s.gpa << "\n";
+    }
+}
