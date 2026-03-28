@@ -67,7 +67,7 @@ public:
         }
         students.push_back(s);
         isSorted = false;
-        std::cout << "  Student '" << s.name << "' added successfully.\n";
+        //std::cout << "  Student '" << s.name << "' added successfully.\n";
         return true;
     }
 
@@ -203,10 +203,4 @@ Student inputStudent() {
     s.major      = readLine("  Major       : ");
     s.activities = readLine("  Activities  : ");
     return s;
-}
-
-
-        std::cout << "\n  Press Enter to continue...";
-        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-    }
 }
