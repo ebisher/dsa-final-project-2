@@ -1,1 +1,29 @@
-//merge sort 
+
+// Merge Sort: by GPA
+// Time: O(n log n)
+// Space: O(n)
+
+void merge(std::vector<Student>& students, int left, int mid, int right) {
+    std::vector<Student> leftArr(students.begin() + left,  students.begin() + mid + 1);
+    std::vector<Student> rightArr(students.begin() + mid + 1, students.begin() + right + 1);
+
+    int i = 0, j = 0, k = left;
+
+    while (i < (int)leftArr.size() && j < (int)rightArr.size()) {
+        if (leftArr[i].gpa <= rightArr[j].gpa)
+            students[k++] = leftArr[i++];
+        else
+            students[k++] = rightArr[j++];
+    }
+    while (i < (int)leftArr.size())  students[k++] = leftArr[i++];
+    while (j < (int)rightArr.size()) students[k++] = rightArr[j++];
+}
+
+void mergeSort(std::vector<Student>& students, int left, int right) {
+    if (left >= right) return;          // base case: single element
+
+    int mid = left + (right - left) / 2;
+    mergeSort(students, left, mid);     // sort left half
+    mergeSort(students, mid + 1, right);// sort right half
+    merge(students, left, mid, right);  // merge the two halves
+}
