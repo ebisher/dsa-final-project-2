@@ -1,0 +1,395 @@
+//student info struct or class to be implemented by ella
+
+#include <iostream>
+#include <vector>
+#include <string>
+#include <algorithm>
+#include <cmath>
+#include <iomanip>
+#include <limits>
+
+// ─────────────────────────────────────────────
+//  Data Model
+// ─────────────────────────────────────────────
+struct Student {
+    std::string name;       // string of chars
+    float       gpa;        // float  (0.0 – 4.0)
+    int         id;         // integer
+    int         classYear;  // integer
+    std::string major;
+    std::string activities;
+};
+
+void printStudent(const Student& s) {
+    std::cout << std::fixed << std::setprecision(2);
+    std::cout << "  Name       : " << s.name        << "\n"
+              << "  ID         : " << s.id           << "\n"
+              << "  GPA        : " << s.gpa          << "\n"
+              << "  Class Year : " << s.classYear    << "\n"
+              << "  Major      : " << s.major        << "\n"
+              << "  Activities : " << s.activities   << "\n";
+}
+
+void printHeader(const std::string& title) {
+    std::cout << "\n========================================\n"
+              << "  " << title << "\n"
+              << "========================================\n";
+}
+
+// ─────────────────────────────────────────────
+//  Jump Search  —  sorted by ID (integer key)
+//  Time: O(√n)  |  Requires sorted array
+// ─────────────────────────────────────────────
+int jumpSearch(const std::vector<Student>& students, int targetID) {
+    int n    = static_cast<int>(students.size());
+    int step = static_cast<int>(std::sqrt(n));
+    int prev = 0;
+
+    // Jump ahead in blocks until we overshoot or hit the end
+    while (prev < n && students[std::min(step, n) - 1].id < targetID) {
+        prev  = step;
+        step += static_cast<int>(std::sqrt(n));
+        if (prev >= n) return -1;
+    }
+
+    // Linear search within the identified block
+    for (int i = prev; i < std::min(step, n); ++i) {
+        if (students[i].id == targetID) return i;
+        if (students[i].id > targetID)  return -1;
+    }
+    return -1;
+}
+
+// ─────────────────────────────────────────────
+//  Interpolation Search  —  sorted by ID
+//  Time: O(log log n) avg for uniform data
+//  Requires sorted array with numeric key
+// ─────────────────────────────────────────────
+int interpolationSearch(const std::vector<Student>& students, int targetID) {
+    int lo = 0;
+    int hi = static_cast<int>(students.size()) - 1;
+
+    while (lo <= hi &&
+           targetID >= students[lo].id &&
+           targetID <= students[hi].id)
+    {
+        if (lo == hi) {
+            if (students[lo].id == targetID) return lo;
+            return -1;
+        }
+
+        // Probe position using uniform-distribution estimate
+        int range  = students[hi].id - students[lo].id;
+        int pos    = lo + ((targetID - students[lo].id) * (hi - lo)) / range;
+
+        if (students[pos].id == targetID) return pos;
+        if (students[pos].id < targetID)  lo = pos + 1;
+        else                              hi = pos - 1;
+    }
+    return -1;
+}
+
+// ─────────────────────────────────────────────
+//  StudentSystem  —  manages the roster
+// ─────────────────────────────────────────────
+class StudentSystem {
+private:
+    std::vector<Student> students;
+    bool isSorted = false;   // tracks whether vector is sorted by ID
+
+    void ensureSorted() {
+        if (!isSorted) {
+            std::sort(students.begin(), students.end(),
+                      [](const Student& a, const Student& b){
+                          return a.id < b.id;
+                      });
+            isSorted = true;
+        }
+    }
+
+    bool idExists(int id) const {
+        for (const auto& s : students)
+            if (s.id == id) return true;
+        return false;
+    }
+
+public:
+    // ── CRUD ──────────────────────────────────
+
+    bool addStudent(const Student& s) {
+        if (idExists(s.id)) {
+            std::cout << "  [Error] Student with ID " << s.id << " already exists.\n";
+            return false;
+        }
+        if (s.gpa < 0.0f || s.gpa > 4.0f) {
+            std::cout << "  [Error] GPA must be between 0.0 and 4.0.\n";
+            return false;
+        }
+        students.push_back(s);
+        isSorted = false;
+        std::cout << "  Student '" << s.name << "' added successfully.\n";
+        return true;
+    }
+
+    bool updateStudent(int id, const Student& updated) {
+        for (auto& s : students) {
+            if (s.id == id) {
+                if (updated.gpa < 0.0f || updated.gpa > 4.0f) {
+                    std::cout << "  [Error] GPA must be between 0.0 and 4.0.\n";
+                    return false;
+                }
+                s = updated;
+                s.id = id;          // preserve original ID
+                isSorted = false;
+                std::cout << "  Record updated.\n";
+                return true;
+            }
+        }
+        std::cout << "  [Error] Student ID " << id << " not found.\n";
+        return false;
+    }
+
+    bool deleteStudent(int id) {
+        auto it = std::remove_if(students.begin(), students.end(),
+                                 [id](const Student& s){ return s.id == id; });
+        if (it == students.end()) {
+            std::cout << "  [Error] Student ID " << id << " not found.\n";
+            return false;
+        }
+        students.erase(it, students.end());
+        std::cout << "  Student ID " << id << " deleted.\n";
+        return true;
+    }
+
+    void listAll() const {
+        if (students.empty()) {
+            std::cout << "  No students on record.\n";
+            return;
+        }
+        std::cout << std::fixed << std::setprecision(2);
+        std::cout << "\n  "
+                  << std::left
+                  << std::setw(6)  << "ID"
+                  << std::setw(24) << "Name"
+                  << std::setw(8)  << "GPA"
+                  << std::setw(12) << "Class Year"
+                  << "Major\n";
+        std::cout << "  " << std::string(60, '-') << "\n";
+        for (const auto& s : students) {
+            std::cout << "  "
+                      << std::left
+                      << std::setw(6)  << s.id
+                      << std::setw(24) << s.name
+                      << std::setw(8)  << s.gpa
+                      << std::setw(12) << s.classYear
+                      << s.major << "\n";
+        }
+    }
+
+    // ── Searches ──────────────────────────────
+
+    void searchByIDJump(int targetID) {
+        printHeader("Jump Search  (by ID)");
+        if (students.empty()) { std::cout << "  No students.\n"; return; }
+
+        ensureSorted();
+        std::cout << "  Array sorted by ID. Step size: "
+                  << static_cast<int>(std::sqrt(students.size())) << "\n\n";
+
+        int idx = jumpSearch(students, targetID);
+        if (idx == -1)
+            std::cout << "  Student ID " << targetID << " not found.\n";
+        else {
+            std::cout << "  Found at index [" << idx << "]:\n";
+            printStudent(students[idx]);
+        }
+    }
+
+    void searchByIDInterpolation(int targetID) {
+        printHeader("Interpolation Search  (by ID)");
+        if (students.empty()) { std::cout << "  No students.\n"; return; }
+
+        ensureSorted();
+        std::cout << "  Array sorted by ID.\n\n";
+
+        int idx = interpolationSearch(students, targetID);
+        if (idx == -1)
+            std::cout << "  Student ID " << targetID << " not found.\n";
+        else {
+            std::cout << "  Found at index [" << idx << "]:\n";
+            printStudent(students[idx]);
+        }
+    }
+
+    // ── GPA utilities ─────────────────────────
+
+    void showHonorsRoll(float threshold = 3.5f) const {
+        printHeader("Honors Roll  (GPA >= " + std::to_string(threshold).substr(0,3) + ")");
+        bool any = false;
+        for (const auto& s : students) {
+            if (s.gpa >= threshold) {
+                printStudent(s);
+                std::cout << "  ----------------------------------------\n";
+                any = true;
+            }
+        }
+        if (!any) std::cout << "  No students meet the threshold.\n";
+    }
+
+    void showClassYear(int year) const {
+        printHeader("Students in Class Year " + std::to_string(year));
+        bool any = false;
+        for (const auto& s : students) {
+            if (s.classYear == year) {
+                printStudent(s);
+                std::cout << "  ----------------------------------------\n";
+                any = true;
+            }
+        }
+        if (!any) std::cout << "  No students found for class year " << year << ".\n";
+    }
+
+    float averageGPA() const {
+        if (students.empty()) return 0.0f;
+        float sum = 0.0f;
+        for (const auto& s : students) sum += s.gpa;
+        return sum / students.size();
+    }
+
+    int size() const { return static_cast<int>(students.size()); }
+};
+
+// ─────────────────────────────────────────────
+//  Input helpers
+// ─────────────────────────────────────────────
+int readInt(const std::string& prompt) {
+    int val;
+    while (true) {
+        std::cout << prompt;
+        if (std::cin >> val) { std::cin.ignore(); return val; }
+        std::cin.clear();
+        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+        std::cout << "  [Error] Please enter a valid integer.\n";
+    }
+}
+
+float readFloat(const std::string& prompt) {
+    float val;
+    while (true) {
+        std::cout << prompt;
+        if (std::cin >> val) { std::cin.ignore(); return val; }
+        std::cin.clear();
+        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+        std::cout << "  [Error] Please enter a valid number.\n";
+    }
+}
+
+std::string readLine(const std::string& prompt) {
+    std::string val;
+    std::cout << prompt;
+    std::getline(std::cin, val);
+    return val;
+}
+
+Student inputStudent() {
+    Student s;
+    s.name       = readLine("  Name        : ");
+    s.id         = readInt ("  ID (int)    : ");
+    s.gpa        = readFloat("  GPA (float) : ");
+    s.classYear  = readInt ("  Class Year  : ");
+    s.major      = readLine("  Major       : ");
+    s.activities = readLine("  Activities  : ");
+    return s;
+}
+
+// ─────────────────────────────────────────────
+//  Main Menu
+// ─────────────────────────────────────────────
+int main() {
+    StudentSystem sys;
+
+    // Seed with sample data
+    sys.addStudent({"Alice Chen",    3.92f, 10001, 2025, "Computer Science", "Robotics, Math Club"});
+    sys.addStudent({"Marcus Webb",   3.45f, 10002, 2026, "Biology",          "Soccer, NHS"});
+    sys.addStudent({"Priya Patel",   2.88f, 10003, 2027, "History",          "Drama Club"});
+    sys.addStudent({"Jordan Lee",    3.70f, 10004, 2025, "Mathematics",      "Debate, Chess Club"});
+    sys.addStudent({"Sofia Reyes",   2.30f, 10005, 2028, "Fine Arts",        "Art Society, Yearbook"});
+    sys.addStudent({"Ethan Brooks",  3.55f, 10006, 2026, "Physics",          "Science Olympiad"});
+
+    int choice = 0;
+    while (true) {
+        printHeader("Student Information System");
+        std::cout << "  Total students: " << sys.size()
+                  << "  |  Avg GPA: "
+                  << std::fixed << std::setprecision(2) << sys.averageGPA() << "\n\n";
+        std::cout << "  [1] List all students\n"
+                  << "  [2] Add a student\n"
+                  << "  [3] Update a student\n"
+                  << "  [4] Delete a student\n"
+                  << "  [5] Search by ID  — Jump Search\n"
+                  << "  [6] Search by ID  — Interpolation Search\n"
+                  << "  [7] View honors roll  (GPA >= 3.5)\n"
+                  << "  [8] Filter by class year\n"
+                  << "  [0] Exit\n";
+
+        choice = readInt("\n  Choose an option: ");
+
+        switch (choice) {
+        case 1:
+            printHeader("All Students");
+            sys.listAll();
+            break;
+
+        case 2:
+            printHeader("Add Student");
+            sys.addStudent(inputStudent());
+            break;
+
+        case 3: {
+            int id = readInt("  Enter ID of student to update: ");
+            std::cout << "  Enter new details:\n";
+            Student updated = inputStudent();
+            sys.updateStudent(id, updated);
+            break;
+        }
+
+        case 4: {
+            int id = readInt("  Enter ID of student to delete: ");
+            sys.deleteStudent(id);
+            break;
+        }
+
+        case 5: {
+            int id = readInt("  Enter ID to search: ");
+            sys.searchByIDJump(id);
+            break;
+        }
+
+        case 6: {
+            int id = readInt("  Enter ID to search: ");
+            sys.searchByIDInterpolation(id);
+            break;
+        }
+
+        case 7:
+            sys.showHonorsRoll();
+            break;
+
+        case 8: {
+            int yr = readInt("  Enter class year: ");
+            sys.showClassYear(yr);
+            break;
+        }
+
+        case 0:
+            std::cout << "\n  Goodbye!\n\n";
+            return 0;
+
+        default:
+            std::cout << "  [Error] Invalid option. Try again.\n";
+        }
+
+        std::cout << "\n  Press Enter to continue...";
+        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+    }
+}
