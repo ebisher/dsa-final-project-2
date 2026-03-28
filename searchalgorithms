@@ -1,4 +1,4 @@
-// file to implement sorting algorithms (by GPA only)
+// file to implement sorting algorithm (Quick Sort by GPA only)
 
 #include <iostream>
 #include <vector>
@@ -33,42 +33,7 @@ void quickSortByGPA(std::vector<Student>& students, int low, int high) {
 }
 
 // ─────────────────────────────────────────────
-//  Heap Sort  —  sorted by GPA
-//  Time: O(n log n)
-// ─────────────────────────────────────────────
-void heapify(std::vector<Student>& students, int n, int i) {
-    int largest = i;
-    int left  = 2 * i + 1;
-    int right = 2 * i + 2;
-
-    if (left < n && students[left].gpa > students[largest].gpa)
-        largest = left;
-
-    if (right < n && students[right].gpa > students[largest].gpa)
-        largest = right;
-
-    if (largest != i) {
-        std::swap(students[i], students[largest]);
-        heapify(students, n, largest);
-    }
-}
-
-void heapSortByGPA(std::vector<Student>& students) {
-    int n = static_cast<int>(students.size());
-
-    // Build max heap
-    for (int i = n / 2 - 1; i >= 0; --i)
-        heapify(students, n, i);
-
-    // Extract elements from heap
-    for (int i = n - 1; i > 0; --i) {
-        std::swap(students[0], students[i]);
-        heapify(students, i, 0);
-    }
-}
-
-// ─────────────────────────────────────────────
-//  Helper Function (for testing)
+//  Helper Function (for  debugging)
 // ─────────────────────────────────────────────
 void printByGPA(const std::vector<Student>& students) {
     std::cout << "\nStudents sorted by GPA:\n";
