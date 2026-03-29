@@ -19,6 +19,7 @@ The main menu is organized as follows:
 1. Student Records
 2. Sorting
 3. Exit
+
 The user will then input their choice and the corresponding menu or action will commence.
 
 If 1 is selected, the student records menu will display as follows:
@@ -27,6 +28,7 @@ If 1 is selected, the student records menu will display as follows:
 3. Update student
 4. Delete student
 5. Return to Main Menu
+
 These options allow the user to print and view all student records, add a new student manually, update a student's information by ID number, delete a student by ID number, and return to the main menu.
 
 if 2 is selected, the sorting menu will display as follows: 
@@ -36,6 +38,7 @@ if 2 is selected, the sorting menu will display as follows:
 4. View honors roll
 5. Filter by class year
 6. Return to Main Menu
+
 These options allow the user to sort the student records by GPA through the merge sort algorithm, the quick sort algorithm, and compare the time comparison of both at the same time, as well as print and view all honors roll (gpa >= 3.8), and print and view all students in a particular class year, as well as return to the main menu.
 
 If 3 is selected, the program will exit and end.
