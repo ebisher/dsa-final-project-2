@@ -56,6 +56,11 @@ private:
     }
 
 public:
+
+    std::vector<Student>& getStudents() { //getter
+        return students;
+    }
+
     bool addStudent(const Student& s) {
         if (idExists(s.id)) {
             std::cout << "  [Error] Student with ID " << s.id << " already exists.\n";
@@ -109,7 +114,7 @@ public:
         std::cout << std::fixed << std::setprecision(2);
         std::cout << "\n  "
                   << std::left
-                  << std::setw(6)  << "ID"
+                  << std::setw(14)  << "ID"
                   << std::setw(24) << "Name"
                   << std::setw(8)  << "GPA"
                   << std::setw(12) << "Class Year"
@@ -118,7 +123,7 @@ public:
         for (const auto& s : students) {
             std::cout << "  "
                       << std::left
-                      << std::setw(6)  << s.id
+                      << std::setw(14)  << s.id
                       << std::setw(24) << s.name
                       << std::setw(8)  << s.gpa
                       << std::setw(12) << s.classYear
@@ -161,7 +166,18 @@ public:
         return sum / students.size();
     }
 
+    bool gpaSorted() const {
+        return std::is_sorted(
+            students.begin(),
+            students.end(),
+            [](const Student& a, const Student& b){
+                return a.gpa < b.gpa;
+            }
+        );
+    }
+
     int size() const { return static_cast<int>(students.size()); }
+
 };
 
 //  Input helpers
@@ -169,7 +185,10 @@ int readInt(const std::string& prompt) {
     int val;
     while (true) {
         std::cout << prompt;
-        if (std::cin >> val) { std::cin.ignore(); return val; }
+        if (std::cin >> val) {
+            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+            return val;
+        }
         std::cin.clear();
         std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
         std::cout << "  [Error] Please enter a valid integer.\n";
@@ -180,7 +199,10 @@ float readFloat(const std::string& prompt) {
     float val;
     while (true) {
         std::cout << prompt;
-        if (std::cin >> val) { std::cin.ignore(); return val; }
+        if (std::cin >> val) {
+            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+            return val;
+        }
         std::cin.clear();
         std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
         std::cout << "  [Error] Please enter a valid number.\n";
@@ -204,3 +226,4 @@ Student inputStudent() {
     s.activities = readLine("  Activities  : ");
     return s;
 }
+

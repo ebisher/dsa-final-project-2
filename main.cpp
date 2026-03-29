@@ -5,6 +5,7 @@
 #include <cstdlib>
 #include <ctime>
 #include <random>
+#include <chrono>
 
 
 //generation vectors for names, class year, majors, activities
@@ -50,9 +51,10 @@ void generateStudents(StudentSystem& system, int count){  //generates random
 
 int main() {
     StudentSystem system; //create system obj
-    generateStudents(system, 20); //generate 100,000 data points/students
+    generateStudents(system, 100000); //generate 100,000 data points/students
     float GPA_avg = system.averageGPA();
-   
+
+    std::vector<Student> originalData = system.getStudents();
    
     //welcome heading display
 
@@ -64,8 +66,7 @@ int main() {
         printHeader("Main Menu");
         std::cout << "1. Student Records" << std::endl;
         std::cout << "2. Sorting" << std::endl;
-        std::cout << "3. View Summary" << std::endl;
-        std::cout << "4. Exit" << std::endl;
+        std::cout << "3. Exit" << std::endl;
 
         int menuSelection;
         std::cin >> menuSelection;
@@ -87,6 +88,7 @@ int main() {
 
             } else if (subMenuSelection == 2){ //adds student with user input info
                 std::cout << "Add student below: ";
+                std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
                 Student newStudent = inputStudent();
                 system.addStudent(newStudent);
                 std::cout << "  Student '" << newStudent.name << "' added successfully.\n";
@@ -95,6 +97,7 @@ int main() {
                 std::cout << "Enter ID to update: ";
                 int id;
                 std::cin >> id;
+                std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
                 Student updatedStudent = inputStudent();
                 updatedStudent.id = id;
                 system.updateStudent(id, updatedStudent);
@@ -117,38 +120,88 @@ int main() {
             // sorting menu
             printHeader("Sorting");
             std::cout << "1. Merge sort by GPA" << std::endl;
-            std::cout << "2. Heap sort by GPA" << std::endl;
-            std::cout << "3. View honors roll" << std::endl;
-            std::cout << "4. Filter by class year" << std::endl;
-            std::cout << "5. Return to Main Menu" << std::endl;
+            std::cout << "2. Quick sort by GPA" << std::endl;
+            std::cout << "3. Merge vs Quick sort by GPA comparison analysis" << std::endl;
+            std::cout << "4. View honors roll" << std::endl;
+            std::cout << "5. Filter by class year" << std::endl;
+            std::cout << "6. Return to Main Menu" << std::endl;
       
             int subMenuSelection;
             std::cin >> subMenuSelection;
-            
+
             if (subMenuSelection == 1){ //call merge sort by gpa
+                if (system.gpaSorted()) { //already sorted catch
+                    std::cout << "List of students is already sorted by GPA";
+                    continue;
+                } else {
+                    std::vector<Student>& students = system.getStudents();
+                    auto start = std::chrono::high_resolution_clock::now();
+                    mergeSort(students, 0, students.size() - 1);
+                    auto end = std::chrono::high_resolution_clock::now();
+                    auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
+                    std::cout << "Students sorted by GPA using Merge Sort." << std::endl;
+                    std::cout << "Time taken: " << duration.count() << " microseconds" << std::endl;
+                }
+                
+            } else if (subMenuSelection == 2){ //call quick sort by gpa
+                if (system.gpaSorted()) { //already sorted catch
+                    std::cout << "List of students is already sorted by GPA";
+                    continue;
+                } else {
+                    std::vector<Student>& students = system.getStudents();
+                    auto start = std::chrono::high_resolution_clock::now();
+                    quickSortByGPA(students, 0, students.size() - 1);
+                    auto end = std::chrono::high_resolution_clock::now();
+                    auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
+                    std::cout << "Time taken: " << duration.count() << " microseconds" << std::endl;
+                    std::cout << "Students sorted by GPA using Quick Sort." << std::endl;
+                }
+                
+            } else if (subMenuSelection == 3){ // compare merge vs quick sort 
+                std::vector<Student> mergeVec = originalData;
+                std::vector<Student> quickVec = originalData;
+                auto startMerge = std::chrono::high_resolution_clock::now();
+                mergeSort(mergeVec, 0, mergeVec.size() - 1);
+                auto endMerge = std::chrono::high_resolution_clock::now();
 
-            } else if (subMenuSelection == 2){ //call heap sort by gpa
+                auto mergeTime = std::chrono::duration_cast<std::chrono::microseconds>(endMerge - startMerge);
+
+                auto startQuick = std::chrono::high_resolution_clock::now();
+                quickSortByGPA(quickVec, 0, quickVec.size() - 1);
+                auto endQuick = std::chrono::high_resolution_clock::now();
+                auto quickTime = std::chrono::duration_cast<std::chrono::microseconds>(endQuick - startQuick);
 
 
-            } else if (subMenuSelection == 3){ // view honor roll
+                printHeader("Sorting Performance");
+                std::cout << "Dataset size: " << system.size() << " students" << std::endl;
+                std::cout << "Merge Sort Time : " << mergeTime.count() << " microseconds" << std::endl;
+                std::cout << "Quick Sort Time : " << quickTime.count() << " microseconds" << std::endl;
+                
+                if (mergeTime == quickTime){
+                    std::cout << "Merge sort took an equal amount of time as quick sort." <<std::endl;
+                } else if (mergeTime > quickTime) {
+                    auto timeDiff = mergeTime - quickTime;
+                    std::cout << "Quick sort was " << timeDiff.count() << " microseconds faster than merge sort." << std::endl;
+                } else {
+                    auto timeDiff = quickTime - mergeTime;
+                    std::cout << "Merge sort was " << timeDiff.count() << " microseconds faster than quick sort." << std::endl;
+                }
+            } else if (subMenuSelection == 4){ // view honor roll
                 system.showHonorsRoll();
                 
-            } else if (subMenuSelection == 4){ // filter by year
+            } else if (subMenuSelection == 5){ // filter by year
                 std::cout << "Enter class year to filter by: ";
                 int yearFilter;
                 std::cin >> yearFilter;
                 system.showClassYear(yearFilter);
                 
-            } else if (subMenuSelection == 5){ //return to main menu
+            } else if (subMenuSelection == 6){ //return to main menu
                 continue;
 
             } else { //invalid selection catch
                 std::cout << "Invalid selection." << std::endl;
             }            
-        
-        } else if (menuSelection == 3){
-            //summary screen TODO
-        } else if (menuSelection == 4){ //exit program
+        } else if (menuSelection == 3){ //exit program
             std::cout << "Thank you for using DK's School Management System. Goodbye!";
             break;
         } else { //invalid selection catch

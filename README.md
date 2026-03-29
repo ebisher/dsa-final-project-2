@@ -1,3 +1,58 @@
+## Instructions for running this program - by Clara Anderson
+
+1. Download/clone the repository from GitHub so that the file is opened and contains main.cpp, merge_sort.cpp, quick_sort.cpp, and student_info.cpp.
+
+2. Navigate to the folder with the files, for example: 
+	cd path/to/project/folder/dsa-final-project-2
+
+3. Compile the program using this command:
+	g++ main.cpp -o school_system
+
+4. Run the executable using this command:
+	./school_system
+
+## Program Overview - by Clara Anderson
+
+When run, the program will auto generate 100,000 random student records and displays a title, number of students, average gpa, and main menu.
+
+The main menu is organized as follows:
+1. Student Records
+2. Sorting
+3. Exit
+The user will then input their choice and the corresponding menu or action will commence.
+
+If 1 is selected, the student records menu will display as follows:
+1. View all students
+2. Add student
+3. Update student
+4. Delete student
+5. Return to Main Menu
+These options allow the user to print and view all student records, add a new student manually, update a student's information by ID number, delete a student by ID number, and return to the main menu.
+
+if 2 is selected, the sorting menu will display as follows: 
+1. Merge sort by GPA
+2. Quick sort by GPA
+3. Merge vs Quick sort comparison
+4. View honors roll
+5. Filter by class year
+6. Return to Main Menu
+These options allow the user to sort the student records by GPA through the merge sort algorithm, the quick sort algorithm, and compare the time comparison of both at the same time, as well as print and view all honors roll (gpa >= 3.8), and print and view all students in a particular class year, as well as return to the main menu.
+
+If 3 is selected, the program will exit and end.
+
+After each selected action of a submenu is completed, the user is returned to the main menu to continue.
+
+
+
+
+
+
+
+
+
+
+
+
 <H1> COP3530 - Project 2 </h1>
 This is the template for Project 2 repositories. It includes all the assignment instructions and documentation to help you use GitHub.
 

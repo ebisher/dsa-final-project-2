@@ -1,4 +1,6 @@
 
+#include <vector>
+
 // Merge Sort: by GPA
 // Time: O(n log n)
 // Space: O(n)
